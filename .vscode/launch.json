@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "OnePieceCardScraper",
+            "request": "launch",
+            "mainClass": "scraper.OnePieceCardScraper",
+            "projectName": "strawdeck"
+        },
+        {
+            "type": "java",
+            "name": "TestJsoup",
+            "request": "launch",
+            "mainClass": "scraper.TestJsoup",
+            "projectName": "strawdeck"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-StrawdeckApplication<strawdeck>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.strawdecks.strawdeck.StrawdeckApplication",
+            "projectName": "strawdeck",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
