@@ -20,19 +20,16 @@ public class CardsDaoImpl implements CardsDao {
      @Override
      public synchronized void create(Cards cards) {
 
-         // Extraemos la parte de la imagen que corresponde al ID base (antes de '_p1', '_p2', etc.)
          String imageUrl = cards.getImage();
          String baseId = extractBaseIdFromImageUrl(imageUrl);
          System.err.println("hOLA MUNDO"+baseId);
      
-         
          String checkIfExistsQuery = "SELECT COUNT(*) FROM cards WHERE id = ?";
          Integer count = jdbcTemplate.queryForObject(checkIfExistsQuery, Integer.class, baseId);
      
          if (count != null && count > 0) {
-             System.out.println("⚠️ La carta con ID " + baseId + " ya existe. Actualizando el registro...");
-     
-             // Actualizar el registro con la nueva información si ya existe
+
+             System.out.println("La carta con ID " + baseId + " ya existe. Actualizando el registro...");
              String sqlUpdate = """
                  UPDATE cards
                  SET cost = ?, type = ?, color = ?, effect = ?, image = ?, power = ?, counter = ?, name = ?
@@ -44,12 +41,12 @@ public class CardsDaoImpl implements CardsDao {
                  cards.getImage(), cards.getPower(), cards.getCounter(), cards.getName(), baseId);
      
              if (rowsUpdated > 0) {
-                 System.out.println("✅ Carta con ID " + baseId + " actualizada con éxito.");
+                 System.out.println("Carta con ID " + baseId + " actualizada con éxito.");
              } else {
-                 System.err.println("❌ No se pudo actualizar la carta con ID: " + baseId);
+                 System.err.println("No se pudo actualizar la carta con id: " + baseId);
              }
          } else {
-             // Si no existe, insertar el nuevo registro
+
              String sqlInsert = """
                  INSERT INTO cards (id, cost, type, color, effect, image, power, counter, name)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -62,12 +59,12 @@ public class CardsDaoImpl implements CardsDao {
                      cards.getPower(), cards.getCounter(), cards.getName());
      
                  if (rows > 0) {
-                     System.out.println("✅ Carta insertada con éxito con ID: " + baseId);
+                     System.out.println("Carta insertada con éxito con id: " + baseId);
                  } else {
-                     throw new RuntimeException("❌ No se pudo insertar la carta.");
+                     throw new RuntimeException("No se pudo insertar la carta.");
                  }
              } catch (DuplicateKeyException e) {
-                 System.err.println("❌ Error crítico: El ID duplicado persiste incluso después de manejar alternativas: " + baseId);
+                 System.err.println("Error de id");
              }
          }
      }
@@ -100,27 +97,26 @@ public class CardsDaoImpl implements CardsDao {
     }
 
     @Override
-public Optional<Cards> find(String id) {
-    
-    Cards card = jdbcTemplate.queryForObject("SELECT * FROM cards WHERE id = ?",(rs, rowNum) -> new Cards(
-        rs.getString("id"), 
-        rs.getInt("cost"),
-        rs.getString("type"),
-        rs.getString("color"),
-        rs.getString("effect"),
-        rs.getString("image"),
-        rs.getInt("power"),
-        rs.getInt("counter"),
-        rs.getString("name")
-    ));
-    if (card != null) { 
-        return Optional.of(card);}
-        else{
-            log.info("Carta no encontrada.");
-            return Optional.empty();
-        }
+    public Optional<Cards> find(String id) {
+        Cards card = jdbcTemplate.queryForObject("SELECT * FROM cards WHERE id = ?",(rs, rowNum) -> new Cards(
+            rs.getString("id"), 
+            rs.getInt("cost"),
+            rs.getString("type"),
+            rs.getString("color"),
+            rs.getString("effect"),
+            rs.getString("image"),
+            rs.getInt("power"),
+            rs.getInt("counter"),
+            rs.getString("name")
+        ));
+        if (card != null) { 
+            return Optional.of(card);}
+            else{
+                log.info("Carta no encontrada.");
+                return Optional.empty();
+            }
 
-}
+    }
 
     @Override
     public void update(Cards cards) {   
