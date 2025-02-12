@@ -21,17 +21,17 @@ public class OnePieceCardScraper {
     private static final String RESULTS_DIR= "results";
 
 
-    public static void main( String[] args){
-        try{
-            List <Map<String, String>> allCardsData = new ArrayList<>();
-            List <Map<String, String>> seriesOptions = getSeriesOptions();
+    public static void main(String[] args) {
+        try {
+            List<Map<String, Object>> allCardsData = new ArrayList<>(); // Cambiar el tipo a Map<String, Object>
+            List<Map<String, String>> seriesOptions = getSeriesOptions();
             for (Map<String, String> option : seriesOptions) {
                 String seriesValue = option.get("value");
                 System.out.println("🔍 Descargando datos de la serie: " + option.get("text"));
-                
+    
                 String htmlContent = fetchSeriesData(seriesValue);
                 if (htmlContent != null) {
-                    List<Map<String, String>> cardsData = extractCardData(htmlContent, seriesValue);
+                    List<Map<String, Object>> cardsData = extractCardData(htmlContent, seriesValue); // Cambiar el tipo a Map<String, Object>
                     allCardsData.addAll(cardsData);
                 }
             }
@@ -66,45 +66,60 @@ public class OnePieceCardScraper {
         return doc.html();
     }
 
-    private static  List<Map<String, String>> extractCardData (String htmlContect, String seriesId){
-        Document doc=Jsoup.parse(htmlContect);
-        List <Map<String, String>> cards = new ArrayList<>();
+    private static List<Map<String, Object>> extractCardData(String htmlContect, String seriesId) {
+        Document doc = Jsoup.parse(htmlContect);
+        List<Map<String, Object>> cards = new ArrayList<>();
         System.out.println("me ejecuto");
-        for (Element cardElement : doc.select("dl.modalCol")){
-            Map <String, String> cardData = new HashMap<>();
+        for (Element cardElement : doc.select("dl.modalCol")) {
+            Map<String, Object> cardData = new HashMap<>();
             cardData.put("name", escapeQuotes(getText(cardElement, ".cardName")));
-            cardData.put("id", escapeQuotes(getSpanText(cardElement, ".infoCol", 0)));
-            cardData.put("rarity", escapeQuotes(getSpanText(cardElement, ".infoCol", 1)));
-            cardData.put("type", escapeQuotes(getSpanText(cardElement, ".infoCol", 2)));
-            cardData.put("attribute", escapeQuotes(getText(cardElement, ".attribute i")));
-            cardData.put("power", escapeQuotes(getText(cardElement, ".power")));
-            cardData.put("counter", escapeQuotes(getText(cardElement, ".counter")));
-            cardData.put("color", escapeQuotes(getText(cardElement, ".color")));
-            cardData.put("card_type", escapeQuotes(getText(cardElement, ".feature")));
+            cardData.put("id", getSpanText(cardElement, ".infoCol", 0));
+            cardData.put("rarity", getSpanText(cardElement, ".infoCol", 1));
+            cardData.put("type", getSpanText(cardElement, ".infoCol", 2));
+            cardData.put("attribute", getText(cardElement, ".attribute i"));
+            cardData.put("power", getNumber(cardElement, ".power")); // Ahora almacena como un número
+            cardData.put("counter", getNumber(cardElement, ".counter")); // Ahora almacena como un número
+            cardData.put("cost", getNumber(cardElement, ".cost")); // Ahora almacena como un número
+            cardData.put("color", getText(cardElement, ".color"));
+            cardData.put("card_type", getText(cardElement, ".feature"));
             cardData.put("effect", escapeQuotes(getText(cardElement, ".text")));
-            cardData.put("series_id", escapeQuotes(seriesId));
-            Element imagElement =cardElement.selectFirst(".frontCol ing");
-            if (imagElement !=null) {
-                String imageUrl =BASE_URL +imagElement.attr("data-src").replace("..", "");
+            cardData.put("series_id", seriesId);
+            Element imagElement = cardElement.selectFirst(".frontCol img");
+            if (imagElement != null) {
+                String imageUrl = BASE_URL + imagElement.attr("data-src").replace("..", "");
                 cardData.put("image_url", imageUrl);
-                cardData.put("alternate_art", imageUrl.contains("_p")?"true":"false");
+                cardData.put("alternate_art", imageUrl.contains("_p") ? "true" : "false");
             }
-           
-            
             cards.add(cardData);
         }
         return cards;
     }
-    
     private static String getText(Element element, String selector) {
         Element found = element.selectFirst(selector);
         return found != null ? found.text().trim() : "";
+    }
+    
+    private static int getNumber(Element element, String selector) {
+        // Extrae el texto del selector
+        String text = getText(element, selector);
+    
+        // Elimina todo lo que no sea un dígito
+        text = text.replaceAll("\\D", "");
+    
+        // Si el texto es vacío o "-" (lo que significa que no hay un valor numérico válido), reemplázalo por "0"
+        if (text.equals("-") || text.isEmpty()) {
+            text = "0";
+        }
+    
+        // Convierte el texto a un número entero y retorna el valor
+        return Integer.parseInt(text);
     }
 
     private static String getSpanText(Element element, String selector, int index) {
         Elements spans = element.select(selector + " span");
         return spans.size() > index ? spans.get(index).text().trim() : "";
     }
+    
     private static String escapeQuotes(String value) {
         if (value != null) {
             return value.replace("\"", "\\\"");  // Escapar las comillas dobles
@@ -112,19 +127,25 @@ public class OnePieceCardScraper {
         return value;
     }
     
-    private static void saveResultsAsJson(List<Map<String, String>> allCardsData) throws IOException {
+    private static void saveResultsAsJson(List<Map<String, Object>> allCardsData) throws IOException {
         File resultsDir = new File(RESULTS_DIR);
         if (!resultsDir.exists()) resultsDir.mkdir();
     
         StringBuilder jsonOutput = new StringBuilder();
-        jsonOutput.append("[\n"); 
+        jsonOutput.append("[\n");
     
         for (int i = 0; i < allCardsData.size(); i++) {
-            Map<String, String> card = allCardsData.get(i);
+            Map<String, Object> card = allCardsData.get(i);
             jsonOutput.append("  {\n");
             int count = 0;
-            for (Map.Entry<String, String> entry : card.entrySet()) {
-                jsonOutput.append("    \"").append(entry.getKey()).append("\": \"").append(entry.getValue()).append("\"");
+            for (Map.Entry<String, Object> entry : card.entrySet()) {
+                jsonOutput.append("    \"").append(entry.getKey()).append("\": ");
+                // Si el valor es un número, no lo ponemos entre comillas
+                if (entry.getValue() instanceof Number) {
+                    jsonOutput.append(entry.getValue());
+                } else {
+                    jsonOutput.append("\"").append(entry.getValue()).append("\"");
+                }
                 if (count < card.size() - 1) jsonOutput.append(",");
                 jsonOutput.append("\n");
                 count++;
@@ -134,7 +155,7 @@ public class OnePieceCardScraper {
             jsonOutput.append("\n");
         }
     
-        jsonOutput.append("]"); 
+        jsonOutput.append("]");
     
         Files.write(Paths.get(RESULTS_DIR + "/card_data.json"), jsonOutput.toString().getBytes());
     }

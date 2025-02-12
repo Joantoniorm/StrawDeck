@@ -16,7 +16,7 @@ public class CardsDaoImpl implements CardsDao {
 	 private JdbcTemplate jdbcTemplate;
 	
     @Override
-    public synchronized void create(Cards cards) {
+    public synchronized void create(Cards cards) { 
         String sqlInsert ="""
                 INSERT INTO cards (id, cost, type, color, effect, image, power, counter,name) 
                 VALUES (?,?,?,?,?,?,?,?)
@@ -28,8 +28,6 @@ public class CardsDaoImpl implements CardsDao {
         if (rows == 0) {
             throw new RuntimeException("Failed to insert card. No rows affected.");
         }
-    
-        // Puedes agregar un log o mensaje para confirmar la inserción si es necesario
         System.out.println("Card inserted successfully with ID: " + cards.getId());
     }
 
@@ -75,14 +73,11 @@ public Optional<Cards> find(String id) {
 }
 
     @Override
-    public void update(Cards cards) {
-        // TODO Auto-generated method stub
+    public void update(Cards cards) {   
         throw new UnsupportedOperationException("Unimplemented method 'update'");
     }
-
     @Override
     public void delete(long id) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'delete'");
     }
 
