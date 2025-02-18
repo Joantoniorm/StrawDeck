@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonDataLoader implements CommandLineRunner {
 
     @Autowired
-    private CardsDao cardsDao;  // Inyectamos el DAO en lugar de JdbcTemplate
+    private CardsDao cardsDao;
 
     @Override
     public void run(String... args) {
@@ -34,7 +34,7 @@ public class JsonDataLoader implements CommandLineRunner {
             }
             List<Cards> cartas = objectMapper.readValue(inputStream, new TypeReference<List<Cards>>() {});
             for (Cards carta : cartas){
-                // Usamos el método create del DAO para insertar o actualizar las cartas
+                
                 cardsDao.create(carta);  
             }
             System.out.println("Successfully loaded " + cartas.size() + " cards.");

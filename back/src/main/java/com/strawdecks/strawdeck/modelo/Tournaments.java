@@ -9,4 +9,5 @@ public class Tournaments {
     private int id;
     private int user_id;
     private String name;
+    private Boolean activo;
 }

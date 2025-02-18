@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -83,7 +84,7 @@ public class UsersDaoImpl implements UsersDao {
     public void update(Users users) {
         int rows = jdbcTemplate.update("""
                 UPDATE users SET 
-                nombre = ?,
+                username = ?,
                 password =?,
                 gmail=?
                 WHERE id = ?
@@ -95,11 +96,28 @@ public class UsersDaoImpl implements UsersDao {
 
     @Override
     public void delete(int id, boolean activo) {
-        int rows = jdbcTemplate.update("""
-            UPDATE users SET 
-            activo = ?
-            WHERE id = ?
-            """, id,activo);
+        Integer count;
+        
+        try {
+            count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM users WHERE id = ?", Integer.class, id
+            );
+        } catch (EmptyResultDataAccessException e) {
+            count = 0; 
+        }
+        if (count != null && count > 0) {
+            int rows = jdbcTemplate.update(
+                "UPDATE users SET activo = ? WHERE id = ?", activo, id
+            );
+            if (rows > 0) {
+                System.out.println("Usuario con ID " + id + " actualizado");
+            } else {
+                System.out.println("No se pudo eliminar el usuario con ID: " + id);
+            }
+        } else {
+            System.out.println("El usuario con ID " + id + " no existe");
+        }
     }
+
     
 }

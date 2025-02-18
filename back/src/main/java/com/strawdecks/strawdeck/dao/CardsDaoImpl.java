@@ -22,7 +22,7 @@ public class CardsDaoImpl implements CardsDao {
 
          String imageUrl = cards.getImage();
          String baseId = extractBaseIdFromImageUrl(imageUrl);
-         System.err.println("hOLA MUNDO"+baseId);
+         System.err.println("hOLA MUNDO "+ baseId);
      
          String checkIfExistsQuery = "SELECT COUNT(*) FROM cards WHERE id = ?";
          Integer count = jdbcTemplate.queryForObject(checkIfExistsQuery, Integer.class, baseId);
@@ -92,7 +92,7 @@ public class CardsDaoImpl implements CardsDao {
                 rs.getInt("counter"),
                 rs.getString("name")
             ));
-            log.info("Devueltos {} registros", listCards.size());
+            log.info("Devueltos"+ listCards.size()+ "registros");
             return listCards;
     }
 
@@ -112,19 +112,42 @@ public class CardsDaoImpl implements CardsDao {
         if (card != null) { 
             return Optional.of(card);}
             else{
-                log.info("Carta no encontrada.");
+                System.err.println("Carta no encontrada.");
                 return Optional.empty();
             }
 
     }
 
     @Override
-    public void update(Cards cards) {   
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    public void update(Cards cards) {
+        String sqlUpdate = """
+            UPDATE cards
+            SET cost = ?, type = ?, color = ?, effect = ?, image = ?, power = ?, counter = ?, name = ?
+            WHERE id = ?
+        """;
+        
+        int rowsUpdated = jdbcTemplate.update(sqlUpdate,
+            cards.getCost(), cards.getType(), cards.getColor(), cards.getEffect(),
+            cards.getImage(), cards.getPower(), cards.getCounter(), cards.getName(), cards.getId());
+        
+        if (rowsUpdated > 0) {
+            System.out.println("Carta con ID" + cards.getId() +"actualizada con éxito.");
+        } else {
+            System.err.println("No se pudo actualizar la carta con ID:"+cards.getId());
+        }
     }
+
     @Override
     public void delete(long id) {
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        String sqlDelete = "DELETE FROM cards WHERE id = ?";
+        
+        int rowsDeleted = jdbcTemplate.update(sqlDelete, id);
+        
+        if (rowsDeleted > 0) {
+           System.out.println("Carta con ID" +id+ "eliminada con éxito.");
+        } else {
+            System.err.println("No se encontró ninguna carta con ID:" +id+  "para eliminar.");
+        }
     }
 
     

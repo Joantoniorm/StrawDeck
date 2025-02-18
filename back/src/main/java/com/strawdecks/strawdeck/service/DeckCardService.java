@@ -13,10 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class DeckCardService {
+    
     @Autowired
     private DeckCardDao deckCardDao;
-
-
     public void addCardsToDeck(Long deckId, List<deck_cards> cards) {
     for (deck_cards card : cards) {
         deckCardDao.addCardsToDeck(deckId, card.getCard_id(), card.getQuantity());
