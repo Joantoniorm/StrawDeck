@@ -7,6 +7,7 @@ import com.strawdecks.strawdeck.modelo.Users;
 
 public interface UsersDao {
     public void create (Users users);
+    //Incluir en el service cuando se implemente un sistema de permisos
     public List<Users> getAll();
     public List <Users> getAllActive();
     public Optional<Users> find (String name);
