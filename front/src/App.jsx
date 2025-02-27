@@ -6,7 +6,7 @@ function App() {
   return (
     <>
     <Header/>  
-    <CardList />
+    <CardList numPerPage={24} />
     </>
   );
 }

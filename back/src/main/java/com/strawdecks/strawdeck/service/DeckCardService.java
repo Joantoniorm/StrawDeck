@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.strawdecks.strawdeck.dao.DeckCardDao;
-import com.strawdecks.strawdeck.modelo.deck_cards;
+import com.strawdecks.strawdeck.modelo.Cards;
+import com.strawdecks.strawdeck.modelo.DeckCard;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,19 +17,30 @@ public class DeckCardService {
     
     @Autowired
     private DeckCardDao deckCardDao;
-    public void addCardsToDeck(Long deckId, List<deck_cards> cards) {
-    for (deck_cards card : cards) {
-        deckCardDao.addCardsToDeck(deckId, card.getCard_id(), card.getQuantity());
+
+    //Añadir una o varias cartas al mazo
+    public void addCardsToDeck(Long deckId, List<DeckCard> cards) {
+        for (DeckCard card : cards) {
+            deckCardDao.addCardsToDeck(deckId, card.getCard_id(), card.getQuantity());
+        }
+        log.info("Carta {} añadida al deck {}", cards.size(), deckId);
     }
-    log.info("Added {} cards to deck {}", cards.size(), deckId);
-}
 
-
-     public List<String> getCardsInDeck(Long deckId) {
+    //Conseguir las cartas del mazo
+    public List<DeckCard> getCardsInDeck(Long deckId) {
         return deckCardDao.getCardsInDeck(deckId);
     }
-    public void removeCardFromDeck(Long deckId, String cardId) {
-        deckCardDao.removeCardFromDeck(deckId, cardId);
-        log.info("Removed card {} from deck {}", cardId, deckId);
+    //Borrar varias cartas
+    public void removeCardsFromDeck(Long deckId, List<DeckCard> cards){
+        for(DeckCard card:cards){
+            deckCardDao.removeCardFromDeck(deckId, card.getCard_id());
+            log.info("borrada la carta {}",card.getCard_id());
+        }
+    }
+    //Actualizar una o varias cartas
+    public void updateCardsInDeck(Long deckId, List<DeckCard> cards){
+        for(DeckCard card: cards){
+            deckCardDao.updateCardQuantity(deckId, card.getCard_id(), card.getQuantity());
+        }
     }
 }

@@ -7,8 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.strawdecks.strawdeck.modelo.Cards;
 import com.strawdecks.strawdeck.modelo.Decks;
-import com.strawdecks.strawdeck.modelo.deck_cards;
+import com.strawdecks.strawdeck.modelo.DeckCard;
 import com.strawdecks.strawdeck.service.DeckCardService;
 import com.strawdecks.strawdeck.service.DeckService;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,22 +64,29 @@ public class DeckController {
     private DeckCardService deckCardService;
 
     @PostMapping("/{deckId}/addCards")
-    public String addCardsToDeck(@PathVariable Long deckId, @RequestBody List<deck_cards> cards) {
-    deckCardService.addCardsToDeck(deckId, cards);
-    return "Added cards to deck " + deckId;
-}
+    public ResponseEntity<?> addCardsToDeck(@PathVariable Long deckId, @RequestBody List<DeckCard> cards) {
+        deckCardService.addCardsToDeck(deckId, cards);
+        return ResponseEntity.ok().build();
+    }
 
 
 
     @GetMapping("/{deckId}/cards")
-    public List<String> getCardsInDeck(@PathVariable Long deckId) {
-        return deckCardService.getCardsInDeck(deckId);
+    public ResponseEntity<List<DeckCard>> getCardsInDeck(@PathVariable Long deckId) {
+        List<DeckCard> cards = deckCardService.getCardsInDeck(deckId);
+        return ResponseEntity.ok(cards);
     }
 
-    @DeleteMapping("/{deckId}/removeCard/{cardId}")
-    public String removeCardFromDeck(@PathVariable Long deckId, @PathVariable String cardId) {
-        deckCardService.removeCardFromDeck(deckId, cardId);
-        return "Card " + cardId + " removed from deck " + deckId;
+    @PostMapping("/{deckId}/deleteCards")
+    public ResponseEntity<?> deleteCardsFromDeck(@PathVariable Long deckId, @RequestBody List<DeckCard> cards) {
+        deckCardService.removeCardsFromDeck(deckId, cards);
+        return ResponseEntity.ok().build();
     }
+    @PostMapping("/{deckId}/updateCards")
+    public ResponseEntity<?> updateCardsInDeck(@PathVariable Long deckId, @RequestBody List<DeckCard> cards) {
+        deckCardService.updateCardsInDeck(deckId, cards);
+        return ResponseEntity.ok().build();
+    }
+    
     
 }

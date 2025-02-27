@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import App from './App.jsx'
 import CardList from './Components/CardList.jsx';
+import EditDeck from './EditDeck.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -11,6 +12,7 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path='/' element={<App/>}/>
         <Route path='/cardList' element={<CardList/>}/>
+        <Route path='/decks/:deckId' element={<EditDeck/>}/>
       </Routes>
     </Router>
   </StrictMode>,

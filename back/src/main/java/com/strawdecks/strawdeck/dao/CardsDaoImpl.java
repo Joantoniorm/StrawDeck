@@ -108,7 +108,7 @@ public class CardsDaoImpl implements CardsDao {
             rs.getInt("power"),
             rs.getInt("counter"),
             rs.getString("name")
-        ));
+        ),id);
         if (card != null) { 
             return Optional.of(card);}
             else{

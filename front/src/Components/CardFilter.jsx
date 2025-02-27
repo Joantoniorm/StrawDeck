@@ -7,6 +7,9 @@ const CardFilter = ({  cards, setFilteredCards }) => {
         color:'',
         type:'',
     });
+
+    const [showAlternatives, setShowAlternatives ] =useState(true);
+
     useEffect(()=>{
         let filtered = cards;
         if(filters.name){
@@ -21,8 +24,12 @@ const CardFilter = ({  cards, setFilteredCards }) => {
             filtered = filtered.filter((card)=>
             card.type.toLowerCase()=== filters.type.toLowerCase());
         }
+        if(showAlternatives){
+          filtered = filtered.filter((card)=> !card.id.includes('_p'))
+        }
         setFilteredCards(filtered);
-    },[filters,cards,setFilteredCards]);
+    },[filters,cards,showAlternatives,setFilteredCards]);
+    
     
     const handleFilterChange = (e)=>{
         setFilters({...filters, [e.target.name]: e.target.value});
@@ -60,6 +67,19 @@ const CardFilter = ({  cards, setFilteredCards }) => {
               <option key={type} value={type}>{type}</option>
             ))}
           </select>
+
+        <div className="flex items-center gap-2 mt-2">
+        <input
+          type="checkbox"
+          id="showAlternatives"
+          checked={!showAlternatives}
+          onChange={() => setShowAlternatives(!showAlternatives)}
+          className="w-5 h-5"
+        />
+        <label htmlFor="showAlternatives" className="text-lg">
+          Mostrar cartas alternativas
+        </label>
+      </div>
         </div>
       );
 };

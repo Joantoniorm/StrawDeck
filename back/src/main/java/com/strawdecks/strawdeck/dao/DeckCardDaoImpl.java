@@ -3,6 +3,9 @@ package com.strawdecks.strawdeck.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.strawdecks.strawdeck.modelo.Cards;
+import com.strawdecks.strawdeck.modelo.DeckCard;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -19,7 +22,7 @@ public class DeckCardDaoImpl implements DeckCardDao {
     @Override
 public void addCardsToDeck(Long deckId, String cardId, int quantity) {
     String sqlInsert = """
-            INSERT INTO decks_cards (deck_id, card_id, quantity) 
+            INSERT INTO deck_cards (deck_id, card_id, quantity) 
             VALUES (?, ?, ?)
             ON DUPLICATE KEY UPDATE quantity = quantity + ?
             """;
@@ -29,33 +32,51 @@ public void addCardsToDeck(Long deckId, String cardId, int quantity) {
     }
 }
 
-    @Override
-    public List<String> getCardsInDeck(Long deckId) {
-        String sqlSelect = """
-                SELECT card_id FROM decks_cards WHERE deck_id = ?
-                """;
+@Override
+public List<DeckCard> getCardsInDeck(Long deckId) {
+    String sqlSelect = """
+        SELECT card_id, quantity
+        FROM deck_cards
+        WHERE deck_id = ?
+    """;
 
-        return jdbcTemplate.query(sqlSelect, ps -> ps.setLong(1, deckId), rs -> {
-            List<String> cardIds = new ArrayList<>();
-            while (rs.next()) {
-                cardIds.add(rs.getString("card_id"));
-            }
-            return cardIds;
-        });
-    }
+    return jdbcTemplate.query(sqlSelect, ps -> {
+        int idx = 1;
+        ps.setLong(idx, deckId); 
+    }, (rs, rowNum) -> {
+        DeckCard deckCard = new DeckCard();
+        deckCard.setCard_id(rs.getString("card_id"));
+        deckCard.setQuantity(rs.getInt("quantity"));
+        return deckCard;
+    });
+}
 
 
     @Override
     public void removeCardFromDeck(Long deckId, String cardId) {
         String sqlDelete = """
-                DELETE FROM decks_cards WHERE deck_id = ? AND card_id = ?
+                DELETE FROM deck_cards WHERE deck_id = ? AND card_id = ?
                 """;
         int rows = jdbcTemplate.update(sqlDelete, deckId, cardId);
         if (rows == 0) {
-            log.warn("No card with ID {} found in deck with ID {}", cardId, deckId);
+            log.warn("No se ha eliminado ninguna carta con id {} que pertenezca al deck {}", cardId, deckId);
         } else {
-            log.info("Card with ID {} removed from deck with ID {}", cardId, deckId);
+            log.info("Se ha eliminado una carta con id {} que pertenezca al deck {}", cardId, deckId);
         }
+    }
+    @Override
+    public void updateCardQuantity(Long deckId, String cardId, int quantity){
+        String sqlUpdate = """
+                UPDATe deck_cards
+                SET quantity = ?
+                WHERE deck_id = ? AND card_id = ?
+                """;
+                int rows = jdbcTemplate.update(sqlUpdate,quantity, deckId, cardId);
+                if (rows==0) {
+                    log.warn("No se ha actualizado ninguna carta con id {} que pertenezca al deck {}", cardId, deckId);
+                } else{
+                    log.warn("Se ha actualizado una carta con id {} que pertenezca al deck {}", cardId, deckId);
+                }
     }
 
     
