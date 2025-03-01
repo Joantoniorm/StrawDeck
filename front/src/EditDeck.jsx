@@ -2,41 +2,20 @@ import { useParams } from "react-router-dom";
 import CardList from "./Components/CardList";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import useDeckCards from "./Hooks/useDeckCards";
 import DeckView from "./Components/DeckView";
+import Deck from "./Components/Deck";
 
 const EditDeck = () => {
   const { deckId } = useParams();
-  const [deckCards, setDeckCards] = useState([]); 
+  const { deckCards,setDeckCards, originalDeckCards,setOriginalDeckCards, leaderImage } = useDeckCards(deckId);
+
   const [editedCards, setEditedCards] = useState({ Contains: [] });  
-  // Primera instancia del deck al recogerlo 
-  const [originalDeckCards, setOriginalDeckCards] = useState([]);
+  
   //Fetch
   useEffect(() => {
-    const fetchDeckCards = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/decks/${deckId}/cards`);
-            const deckCards = response.data;
-
-            const cardsWithDetails = await Promise.all(
-                deckCards.map(async (deckCard) => {
-                    const cardResponse = await axios.get(`http://localhost:8080/cards/${deckCard.card_id}`);
-                    return {
-                        ...cardResponse.data,
-                        copies: deckCard.quantity
-                    };
-                })
-            );
-
-            setDeckCards(cardsWithDetails);
-            setEditedCards({ Contains: cardsWithDetails });
-            setOriginalDeckCards(cardsWithDetails); 
-        } catch (error) {
-            console.error("Error cargando cartas", error);
-        }
-    };
-
-    fetchDeckCards();
-}, [deckId]);
+   setEditedCards({Contains:deckCards})
+}, [deckCards]);
 
  
   
@@ -132,6 +111,7 @@ const EditDeck = () => {
         >
           Guardar Cambios
         </button>
+        <Deck></Deck>
       </div>
     </div>
 );
