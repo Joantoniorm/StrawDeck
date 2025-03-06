@@ -12,6 +12,7 @@ const CardFilter = ({ cards, setFilteredCards }) => {
 
   useEffect(() => {
     let filtered = cards;
+    
     if (filters.name) {
       filtered = filtered.filter((card) =>
         card.name.toLowerCase().includes(filters.name.toLowerCase()));

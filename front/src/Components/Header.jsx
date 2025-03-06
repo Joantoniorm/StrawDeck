@@ -1,24 +1,45 @@
-const Header = ()=>{
-    return (
-        <header className="bg-gray-900 hover:bg-red-800 text-white p-4 shadow-md w-full transition-colors">
-          <div className="container mx-auto flex justify-between items-center">
-            {/* Logo */}
-            <div className="text-xl font-bold">MyLogo</div>
-    
-            {/* Botones */}
-            <div className="flex space-x-4">
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 hover:shadow-lg border border-white rounded-lg transition">
-                Home
-              </button>
-              <button className="px-4 py-2 bg-green-600 hover:bg-red-700 hover:shadow-lg border border-white rounded-lg transition">
-                About
-              </button>
-              <button className="px-4 py-2 bg-red-600 hover:bg-red-700 hover:shadow-lg border border-white rounded-lg transition">
-                Contact
-              </button>
-            </div>
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Hooks/AuthProvider";
+import { Link } from "react-router-dom";
+
+const Header = () => {
+  const navigate = useNavigate();
+
+  const { isLogged, logout } = useAuth();
+  const handleLogout = ()=>{
+    logout();
+    navigate('/');
+  }
+
+
+  return (
+    <header className="w-full bg-indigo-600 shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex-shrink-0">
+            <Link to="/" className="text-xl font-bold text-white">
+              StrawDecks
+            </Link>
           </div>
-        </header>
-      );
-    };
+          <div className="flex space-x-4">
+            <Link to="/cardList" className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-700 transition">
+              Cards
+            </Link>
+            <Link to="/decks" className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-700 transition">
+              Decks
+            </Link>
+            {isLogged ? (
+              <button onClick={handleLogout} className="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-700 transition">Logout</button>
+            ) : (
+              <Link to="/login" className="px-4 py-2 rounded bg-green-500 text-white hover:bg-green-700 transition">
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
 export default Header;

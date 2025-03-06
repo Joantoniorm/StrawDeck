@@ -28,11 +28,11 @@ const CardModal = ({ card, onClose }) => {
 const Card = ({ card, addCard, removeCard }) => {
   const [showModal, setShowModal] = useState(false);
   const location = useLocation();
-  const isInDecks = location.pathname.includes("decks");
+  const isInDecks = location.pathname.includes("edit");
 
   return (
     <>
-      <div
+      <div 
         className="relative cursor-pointer border border-gray-300 p-4 rounded-lg shadow-md bg-gray-800 text-white w-[150px] hover:scale-105 transition-transform"
         onClick={() => setShowModal(true)}
       >

@@ -33,7 +33,7 @@ public class UsersDaoImpl implements UsersDao {
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sqlInsert, Statement.RETURN_GENERATED_KEYS);
             int idx = 1;
-            ps.setString(idx++, users.getName());
+            ps.setString(idx++, users.getUsername());
             ps.setString(idx++, users.getPassword());
             ps.setString(idx++, users.getGmail());
             ps.setBoolean(idx++, true);
@@ -70,7 +70,7 @@ public class UsersDaoImpl implements UsersDao {
     }
 
     @Override
-    public Optional<Users> find(String username) {
+    public Optional<Users> findByName(String username) {
         try {
             Users user = jdbcTemplate.queryForObject(
                 "SELECT * FROM users WHERE username = ?", 
@@ -89,6 +89,26 @@ public class UsersDaoImpl implements UsersDao {
             return Optional.empty();
         }
     }
+    @Override
+    public Optional<Users> find(int id) {
+        try {
+            Users user = jdbcTemplate.queryForObject(
+                "SELECT * FROM users WHERE id = ?", 
+                (rs, rowNum) -> new Users(
+                    rs.getInt("id"), 
+                    rs.getString("username"),  
+                    rs.getString("password"),
+                    rs.getString("gmail"),
+                    rs.getBoolean("activo")
+                ),
+                id
+            );
+            return Optional.ofNullable(user);
+        } catch (EmptyResultDataAccessException e) {
+            log.warn("No existe usuario con username: {}", id);
+            return Optional.empty();
+        }
+    }
 
     @Override
     public void update(Users users) {
@@ -99,7 +119,7 @@ public class UsersDaoImpl implements UsersDao {
                 gmail = ?
                 WHERE id = ?
                 """, 
-                users.getName(),  
+                users.getUsername(),  
                 users.getPassword(),
                 users.getGmail(),
                 users.getId()

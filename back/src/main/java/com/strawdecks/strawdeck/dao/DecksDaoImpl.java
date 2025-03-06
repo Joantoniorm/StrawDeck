@@ -23,23 +23,27 @@ public class DecksDaoImpl implements DecksDao{
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Override
-    public void create(Decks decks) {
-        
-        String sqlInsert="""
-                INSERT INTO decks (id, user_id, name, dateofcreation, activo) VALUES (?,?,?,?,?)
-                """;
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update (connection ->{
-            PreparedStatement ps = connection.prepareStatement(sqlInsert, new String []{"id"});
-            int idx= 1;
-            ps.setInt(idx++, decks.getUser_id());
-            ps.setString(idx++, decks.getName());
-            ps.setTimestamp(idx++, decks.getDateofcreation());
-            ps.setBoolean(idx, true);
-            return ps;
-        }, keyHolder);
-        decks.setId(keyHolder.getKey().intValue());
-    }
+public void create(Decks decks) {
+    // SQL con el parámetro 'id' omitido porque es autoincremental
+    String sqlInsert = """
+            INSERT INTO decks (user_id, name, dateofcreation, activo) VALUES (?,?,?,?)
+            """;
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+
+    jdbcTemplate.update(connection -> {
+        PreparedStatement ps = connection.prepareStatement(sqlInsert, new String[] {"id"});
+        int idx = 1;
+        // Asignación de parámetros
+        ps.setInt(idx++, decks.getUser_id());  // Parámetro 1
+        ps.setString(idx++, decks.getName());  // Parámetro 2
+        ps.setTimestamp(idx++, decks.getDateofcreation());  // Parámetro 3
+        ps.setBoolean(idx++, true);  // Parámetro 4 (activo)
+        return ps;
+    }, keyHolder);
+    
+    // Obtener el ID generado automáticamente por la base de datos
+    decks.setId(keyHolder.getKey().intValue());
+}
 
     @Override
     public List<Decks> getAll() {
@@ -55,13 +59,15 @@ public class DecksDaoImpl implements DecksDao{
 
     @Override
     public Optional<Decks> find(int id) {
-        Decks deck = jdbcTemplate.queryForObject("Select * FROM decks WHERE name = ?", (rs, rowNum)->
+        Decks deck = jdbcTemplate.queryForObject("Select * FROM decks WHERE id = ?", (rs, rowNum)->
         new Decks(
             rs.getInt("id"),
             rs.getInt("user_id"),
             rs.getString("name"),
             rs.getTimestamp("dateofcreation"),
-            rs.getBoolean("activo")));
+            rs.getBoolean("activo")),id
+            );
+            
             if (deck!=null) {
                 return Optional.of(deck);
             }else{

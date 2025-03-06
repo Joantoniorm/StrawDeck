@@ -10,7 +10,8 @@ public interface UsersDao {
     //Incluir en el service cuando se implemente un sistema de permisos
     public List<Users> getAll();
     public List <Users> getAllActive();
-    public Optional<Users> find (String name);
+    public Optional<Users> findByName(String name);
+    public Optional<Users> find (int id);
     public void update (Users users);
     public void delete (int id, boolean activo);
 }

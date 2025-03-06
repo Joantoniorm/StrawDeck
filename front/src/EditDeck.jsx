@@ -3,119 +3,217 @@ import CardList from "./Components/CardList";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import useDeckCards from "./Hooks/useDeckCards";
-import DeckView from "./Components/DeckView";
+import CardContainerDeck from "./Components/CardContainerDeck";
 import Deck from "./Components/Deck";
+import { useAuth } from "./Hooks/AuthProvider";
+import Cookies from "js-cookie"
 
 const EditDeck = () => {
-  const { deckId } = useParams();
-  const { deckCards,setDeckCards, originalDeckCards,setOriginalDeckCards, leaderImage } = useDeckCards(deckId);
+    const { deckId } = useParams();
+    const { deckCards, setDeckCards, originalDeckCards, setOriginalDeckCards } = useDeckCards(deckId);
 
-  const [editedCards, setEditedCards] = useState({ Contains: [] });  
-  
-  //Fetch
-  useEffect(() => {
-   setEditedCards({Contains:deckCards})
-}, [deckCards]);
+    const [editedCards, setEditedCards] = useState({ Contains: [] });
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newDeckName, setNewDeckName] = useState("");
+    const {isLogged,userId} = useAuth();
+    
+    useEffect(() => {
+        setEditedCards({ Contains: deckCards });
+    }, [deckCards]);
 
- 
-  
-  const addCard = (card) => {
-    setEditedCards((prev) => {
-      const existingCard = prev.Contains.find((c) => c.id === card.id);
+    const addCard = (card) => {
+        setEditedCards((prev) => {
+            const existingCard = prev.Contains.find((c) => c.id === card.id);
+            if (existingCard) {
+                return {
+                    ...prev,
+                    Contains: prev.Contains.map((c) =>
+                        c.id === card.id ? { ...c, copies: c.copies + 1 } : c
+                    ),
+                };
+            } else {
+                return {
+                    ...prev,
+                    Contains: [...prev.Contains, { ...card, copies: 1 }],
+                };
+            }
+        });
+    };
 
-      if (existingCard) {
-        return {
-          ...prev,
-          Contains: prev.Contains.map((c) =>
-            c.id === card.id ? { ...c, copies: c.copies + 1 } : c
-          ),
-        };
-      } else {
-        return {
-          ...prev,
-          Contains: [...prev.Contains, { ...card, copies: 1 }],
-        };
-      }
-    });
-  };
+    const removeCard = (cardId) => {
+        setEditedCards((prev) => ({
+            ...prev,
+            Contains: prev.Contains
+                .map((c) => (c.id === cardId ? { ...c, copies: c.copies - 1 } : c))
+                .filter((c) => c.copies > 0),
+        }));
+    };
 
-  
-  const removeCard = (cardId) => {
-    setEditedCards((prev) => ({
-      ...prev,
-      Contains: prev.Contains
-        .map((c) => (c.id === cardId ? { ...c, copies: c.copies - 1 } : c))
-        .filter((c) => c.copies > 0),
-    }));
-  };
+    const saveChanges = async () => {
+        const toAdd = [];
+        const toUpdate = [];
+        const toDelete = [];
 
-  const saveChanges = async () => {
-    const toAdd = [];
-    const toUpdate = [];
-    const toDelete = [];
+        const originalMap = new Map(originalDeckCards.map(c => [c.id, c.copies]));
 
-    const originalMap = new Map(originalDeckCards.map(c => [c.id, c.copies]));
+        for (const card of editedCards.Contains) {
+            const originalCopies = originalMap.get(card.id);
 
-    for (const card of editedCards.Contains) {
-        const originalCopies = originalMap.get(card.id);
+            if (originalCopies === undefined) {
+                toAdd.push({ card_id: card.id, quantity: card.copies });
+            } else if (originalCopies !== card.copies) {
+                toUpdate.push({ card_id: card.id, quantity: card.copies });
+            }
 
-        if (originalCopies === undefined) {
-            toAdd.push({ card_id: card.id, quantity: card.copies });
-        } else if (originalCopies !== card.copies) {
-            toUpdate.push({ card_id: card.id, quantity: card.copies });
+            originalMap.delete(card.id);
         }
 
-        originalMap.delete(card.id);
-    }
-
-    for (const [cardId] of originalMap) {
-        toDelete.push({ card_id: cardId });
-    }
-
-    try {
-        if (toAdd.length > 0) {
-            await axios.post(`http://localhost:8080/decks/${deckId}/addCards`, toAdd);
+        for (const [cardId] of originalMap) {
+            toDelete.push({ card_id: cardId });
         }
+        const token = Cookies.get('token');
+        try {
+            if (toAdd.length > 0) {
+                await axios.post(`http://localhost:8080/decks/${deckId}/addCards`, toAdd,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+            }
+            if (toUpdate.length > 0) {
+                await axios.post(`http://localhost:8080/decks/${deckId}/updateCards`, toUpdate,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+            }
+            if (toDelete.length > 0) {
+                await axios.post(`http://localhost:8080/decks/${deckId}/deleteCards`, toDelete,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+            }
 
-        if (toUpdate.length > 0) {
-            await axios.post(`http://localhost:8080/decks/${deckId}/updateCards`, toUpdate);
+            console.log("Cambios guardados correctamente");
+            setOriginalDeckCards(editedCards.Contains);
+        } catch (error) {
+            console.error("Error al guardar cambios:", error);
         }
+    };
 
-        if (toDelete.length > 0) {
-            await axios.post(`http://localhost:8080/decks/${deckId}/deleteCards`, toDelete);
+    const openCreateModal = () => setShowCreateModal(true);
+    const closeCreateModal = () => setShowCreateModal(false);
+
+    const handleCreateDeck = async () => {
+        if (!newDeckName.trim()) {
+            alert("El nombre es obligatorio");
+            return;
         }
+        if (!isLogged) {
+            alert("Por favor inicia sesión para crear un mazo");
+            return;
+        }
+        const token = Cookies.get("token") || localStorage.getItem("token");
+        console.log("el token es:", token);
+        if (!token) {
+            alert("Token no encontrado, por favor inicia sesión nuevamente.");
+            return;
+        }
+    
+        try {
+            const response = await axios.post(
+                "http://localhost:8080/decks/create", 
+                {
+                    name: newDeckName,
+                    activo: true,
+                    user_id: userId
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+    
+            if (response.status === 200 || response.status === 201) {
+                alert("Mazo creado correctamente");
+                setNewDeckName("");
+                closeCreateModal();
+            }
+        } catch (error) {
+            console.error("Error al crear el mazo:", error);
+            alert("Hubo un error al crear el mazo");
+        }
+    };
 
-        console.log("Cambios guardados correctamente");
-        setOriginalDeckCards(editedCards.Contains);
-    } catch (error) {
-        console.error("Error al guardar cambios:", error);
-    }
-};
+    return (
+        <div className="p-4">
+            <h2 className="text-2xl font-bold text-white text-center">Editar Mazo</h2>
 
+            {/* Botón para crear nuevo mazo */}
+            <div className="text-center mb-4">
+                <button
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+                    onClick={openCreateModal}
+                >
+                    Crear Nuevo Mazo
+                </button>
+            </div>
 
-  return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold text-white text-center">Editar Mazo</h2>
-      <CardList addCard={addCard} removeCard={removeCard} />
-      
-      <DeckView 
-          editedCards={editedCards} 
-          addCard={addCard} 
-          removeCard={removeCard} 
-      />
+            <CardList addCard={addCard} removeCard={removeCard} />
 
-      <div className="text-center mt-4">
-        <button 
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={saveChanges}
-        >
-          Guardar Cambios
-        </button>
-        <Deck></Deck>
-      </div>
-    </div>
-);
+            <CardContainerDeck
+                editedCards={editedCards}
+                addCard={addCard}
+                removeCard={removeCard}
+            />
 
+            <div className="text-center mt-4">
+                <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    onClick={saveChanges}
+                >
+                    Guardar Cambios
+                </button>
+                <Deck />
+            </div>
+
+            {/* Modal para crear mazo */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-10 flex justify-center items-center">
+                    <div className="bg-black p-6 rounded shadow-lg w-80">
+                        <h3 className="text-lg font-bold mb-4">Crear Nuevo Mazo</h3>
+                        <input
+                            type="text"
+                            placeholder="Nombre del mazo"
+                            value={newDeckName}
+                            onChange={(e) => setNewDeckName(e.target.value)}
+                            className="border p-2 w-full mb-4"
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-gray-400 text-white px-3 py-1 rounded"
+                                onClick={closeCreateModal}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-700"
+                                onClick={handleCreateDeck}
+                            >
+                                Crear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export default EditDeck;

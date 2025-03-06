@@ -1,49 +1,53 @@
 import { useEffect, useState } from "react"
 import axios from "axios";
-const useDeckCards = (deckId)=>{
+const useDeckCards = (deckId) => {
     //Info del deck
-    const [deckInfo,setDeckInfo] = useState({});
+    const [deckInfo, setDeckInfo] = useState({});
     //Modificacion Local
-    const [deckCards , setDeckCards]= useState([]);
-    const [leaderImage, setLeaderImage]=useState(null);
+    const [deckCards, setDeckCards] = useState([]);
+    const [leaderImage, setLeaderImage] = useState(null);
     //Envio a Base de datos
-    const [originalDeckCards, setOriginalDeckCards]= useState ([]);
-    
+    const [originalDeckCards, setOriginalDeckCards] = useState([]);
+
     const fetchDeckInfo = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/decks/${deckId}`);
-            setDeckInfo(response.data); 
+            setDeckInfo(response.data);
+            console.log("Esto esta pasando el data es:", response.data)
         } catch (error) {
             console.error("Error cargando detalles del deck", error);
         }
     };
-    const fetchDeckCards = async ()=> {
-        try{
+
+    const fetchDeckCards = async () => {
+        try {
             const response = await axios.get(`http://localhost:8080/decks/${deckId}/cards`);
             const deckCards = response.data;
-             const cardsWithDetails = await Promise.all (
-                deckCards.map(async (deckCard)=>{
+            const cardsWithDetails = await Promise.all(
+                deckCards.map(async (deckCard) => {
                     const cardResponse = await axios.get(`http://localhost:8080/cards/${deckCard.card_id}`);
-                    return{
+                    return {
                         ...cardResponse.data,
-                        copies:deckCard.quantity
+                        copies: deckCard.quantity
                     };
                 })
-             );
-            setDeckCards (cardsWithDetails);
+            );
+            setDeckCards(cardsWithDetails);
             setOriginalDeckCards(cardsWithDetails);
 
-            const leaderCard = cardsWithDetails.find(card=> card.type.toLowerCase () === "leader");
-            setLeaderImage (leaderCard ? leaderCard.image_url : null ); 
-        } catch (error){
+            const leaderCard = cardsWithDetails.find(card => card.type.toLowerCase() === "leader");
+            setLeaderImage(leaderCard ? leaderCard.image_url : null);
+        } catch (error) {
             console.error("Error cargando Decks", error);
         }
     };
-    useEffect(()=>{
-        fetchDeckInfo
+
+    useEffect(() => {
+        fetchDeckInfo();
         fetchDeckCards();
     }, [deckId]);
-    return{
+    
+    return {
         deckInfo,
         setDeckInfo,
         deckCards,

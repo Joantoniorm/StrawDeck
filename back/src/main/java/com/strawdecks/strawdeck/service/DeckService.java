@@ -1,5 +1,6 @@
 package com.strawdecks.strawdeck.service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ public class DeckService {
     @Autowired
     private DecksDao decksDao;
     public void createDeck(Decks deck){
+        deck.setDateofcreation(new Timestamp(System.currentTimeMillis()));
         decksDao.create(deck);
     }
     public List<Decks> getAllDecks(){
