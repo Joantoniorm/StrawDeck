@@ -39,4 +39,11 @@ public class DeckService {
     public void deckDelete (int id, Boolean activo){
         decksDao.delete(id, activo);
     }
+    public List<Decks> getChronoDecks(){
+        System.out.println("hola");
+        return decksDao.getChronoDecks();
+    }
+    
+
+
 }

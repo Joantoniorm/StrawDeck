@@ -1,23 +1,71 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import useDeckCards from "./Hooks/useDeckCards";
 import CardContainerDeck from "./Components/CardContainerDeck";
-
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const ViewDeck = () => {
     const { deckId } = useParams();
-    const { deckInfo, deckCards, originalDeckCards, setOriginalDeckCards, leaderImage } = useDeckCards(deckId);
-
+    const { deckInfo, deckCards, leaderImage } = useDeckCards(deckId);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showButtons, setShowButtons] = useState(false);
     const [numberCards, setNumberCards] = useState();
-    const [editedCards, setEditedCards] = useState({ Contains: [] });
-
+    const navigate = useNavigate();
     const characters = deckCards.filter(card => card.type === 'CHARACTER');
     const events = deckCards.filter(card => card.type === 'EVENT');
     const stages = deckCards.filter(card => card.type === 'STAGE');
+
+    useEffect(() => {
+        if (deckInfo && Cookies.get("user_id")) {
+            const userIdFromCookie = parseInt(Cookies.get("user_id"));
+            if (deckInfo.user_id === userIdFromCookie) {
+                setShowButtons(true);
+            } else {
+                setShowButtons(false);
+            }
+        }
+    }, [deckInfo]);
+
     useEffect(() => {
         const totalCards = deckCards.reduce((total, card) => total + card.copies, 0);
-        setNumberCards(totalCards)
-    })
+        setNumberCards(totalCards);
+    }, [deckCards]);
+
+    const handleDeleteDeck = async () => {
+        const token = Cookies.get("token") || localStorage.getItem("token");
+        if (!token) {
+            alert("Token no encontrado. Por favor, inicia sesión.");
+            return;
+        }
+        try {
+            const response = await axios.put(`http://localhost:8080/decks/delete/${deckId}`, null, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.status === 200) {
+                navigate("/decks");
+            }
+        } catch (error) {
+            console.error("Error al eliminar el mazo:", error);
+            alert("Hubo un error al eliminar el mazo.");
+        }
+    };
+
+    const openDeleteModal = () => {
+        const token = Cookies.get("token");
+        if (!token) {
+            navigate("/login");
+        }
+        setShowDeleteModal(true);
+    };
+
+    const closeDeleteModal = () => {
+        setShowDeleteModal(false);
+    };
+
     return (
         <div className="w-full p-3 flex flex-col items-center justify-start">
             <div className="w-[70%] grid grid-cols-1 md:grid-cols-3 border-4 bg-gray-900 bg-black p-2 rounded-lg">
@@ -30,13 +78,21 @@ const ViewDeck = () => {
                         {deckInfo.name}
                     </h1>
                     <h1 className="pt-4">Total Cards: {numberCards}/51</h1>
+                    {showButtons && (
                     <div className="text-center mt-4">
                         <Link to={`/decks/edit/${deckId}`}>
                             <button className="bg-green-500 text-white px-4 py-2 mt-5 rounded hover:bg-blue-700">
                                 Editar
                             </button>
                         </Link>
+                        <button
+                            onClick={openDeleteModal}
+                            className="bg-red-500 text-white px-4 py-2 mt-3 ml-2 rounded hover:bg-red-700"
+                        >
+                            Eliminar
+                        </button>
                     </div>
+                    )}
                 </div>
             </div>
             <div className="w-[100%] min-h-[650px]  grid grid-cols-1 md:grid-cols-3 border-4 bg-gray-900 bg-black p-2 rounded-lg">
@@ -57,8 +113,33 @@ const ViewDeck = () => {
                         <CardContainerDeck editedCards={stages} />
                     </div>
                 </div>
+                {showDeleteModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="bg-white p-6 rounded-lg w-80">
+                            <h3 className="text-lg font-semibold text-black mb-4">
+                                ¿Estás seguro de eliminar este mazo? Esta acción es irreversible.
+                            </h3>
+                                <div className="flex justify-between">
+                                    <button
+                                        onClick={closeDeleteModal}
+                                        className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={() => { handleDeleteDeck(); closeDeleteModal(); }}
+                                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </div>
+                            
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
-}
-export default ViewDeck
+};
+
+export default ViewDeck;

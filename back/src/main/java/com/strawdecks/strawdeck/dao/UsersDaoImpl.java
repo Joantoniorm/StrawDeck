@@ -73,7 +73,7 @@ public class UsersDaoImpl implements UsersDao {
     public Optional<Users> findByName(String username) {
         try {
             Users user = jdbcTemplate.queryForObject(
-                "SELECT * FROM users WHERE username = ?", 
+                "SELECT * FROM users WHERE username = ? LIMIT 1",  // LIMIT 1 asegura que solo se devuelva un usuario
                 (rs, rowNum) -> new Users(
                     rs.getInt("id"), 
                     rs.getString("username"),  

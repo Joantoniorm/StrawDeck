@@ -21,7 +21,7 @@ createRoot(document.getElementById('root')).render(
       <Router basename="/">
         <Header />
         <Routes>
-          <Route path='/' element={<App />} />
+          <Route path='/' element={<App />}/>
           <Route path='/cardList' element={<CardList />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />

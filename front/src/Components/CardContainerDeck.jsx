@@ -7,7 +7,6 @@ const CardContainerDeck = ({ editedCards, addCard, removeCard }) => {
     return (
         <div className="p-4">
             <div className="grid grid-cols-2 gap-4">
-                {/* Iterar directamente sobre editedCards */}
                 {editedCards.map((card) => (
                      <div key={card.id} className="flex flex-col items-center">
                      <Card 
@@ -16,7 +15,7 @@ const CardContainerDeck = ({ editedCards, addCard, removeCard }) => {
                          removeCard={() => removeCard(card.id)} 
                      />
                      <div className="mt-2 text-center">
-                         <p>Copias: {card.copies}</p>  {/* Mostrar el atributo copies */}
+                         <p>Copias: {card.copies}</p>
                      </div>
                  </div>
                 ))}

@@ -41,17 +41,17 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
         return;
     }
 
-    // Quitamos el "Bearer " y obtenemos el JWT
+    // Quita el "Bearer " y obtiene el JWT
     jwt = authHeader.substring(7);
     username = jwtService.extractUsername(jwt);
 
     if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        // Cargar UserDetails desde el servicio de usuario (ahora tu Users ya es UserDetails)
+        // Cargar UserDetails desde el servicio de usuario
         UserDetails userDetails = userService.loadUserByUsername(username);
 
         // Validar el token con UserDetails
         if (jwtService.isTokenValid(jwt, userDetails)) {
-            // Crear un token de autenticación con los detalles del usuario y establecerlo en el contexto
+          
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);

@@ -20,92 +20,6 @@ const EditDeck = () => {
     useEffect(() => {
         setEditedCards({ Contains: deckCards });
     }, [deckCards]);
-
-    const addCard = (card) => {
-        setEditedCards((prev) => {
-            const existingCard = prev.Contains.find((c) => c.id === card.id);
-            if (existingCard) {
-                return {
-                    ...prev,
-                    Contains: prev.Contains.map((c) =>
-                        c.id === card.id ? { ...c, copies: c.copies + 1 } : c
-                    ),
-                };
-            } else {
-                return {
-                    ...prev,
-                    Contains: [...prev.Contains, { ...card, copies: 1 }],
-                };
-            }
-        });
-    };
-
-    const removeCard = (cardId) => {
-        setEditedCards((prev) => ({
-            ...prev,
-            Contains: prev.Contains
-                .map((c) => (c.id === cardId ? { ...c, copies: c.copies - 1 } : c))
-                .filter((c) => c.copies > 0),
-        }));
-    };
-
-    const saveChanges = async () => {
-        const toAdd = [];
-        const toUpdate = [];
-        const toDelete = [];
-
-        const originalMap = new Map(originalDeckCards.map(c => [c.id, c.copies]));
-
-        for (const card of editedCards.Contains) {
-            const originalCopies = originalMap.get(card.id);
-
-            if (originalCopies === undefined) {
-                toAdd.push({ card_id: card.id, quantity: card.copies });
-            } else if (originalCopies !== card.copies) {
-                toUpdate.push({ card_id: card.id, quantity: card.copies });
-            }
-
-            originalMap.delete(card.id);
-        }
-
-        for (const [cardId] of originalMap) {
-            toDelete.push({ card_id: cardId });
-        }
-        const token = Cookies.get('token');
-        try {
-            if (toAdd.length > 0) {
-                await axios.post(`http://localhost:8080/decks/${deckId}/addCards`, toAdd,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
-            }
-            if (toUpdate.length > 0) {
-                await axios.post(`http://localhost:8080/decks/${deckId}/updateCards`, toUpdate,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
-            }
-            if (toDelete.length > 0) {
-                await axios.post(`http://localhost:8080/decks/${deckId}/deleteCards`, toDelete,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
-            }
-
-            console.log("Cambios guardados correctamente");
-            setOriginalDeckCards(editedCards.Contains);
-        } catch (error) {
-            console.error("Error al guardar cambios:", error);
-        }
-    };
-
     const openCreateModal = () => setShowCreateModal(true);
     const closeCreateModal = () => setShowCreateModal(false);
 
@@ -164,25 +78,6 @@ const EditDeck = () => {
                     Crear Nuevo Mazo
                 </button>
             </div>
-
-            <CardList addCard={addCard} removeCard={removeCard} />
-
-            <CardContainerDeck
-                editedCards={editedCards}
-                addCard={addCard}
-                removeCard={removeCard}
-            />
-
-            <div className="text-center mt-4">
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    onClick={saveChanges}
-                >
-                    Guardar Cambios
-                </button>
-                <Deck />
-            </div>
-
             {/* Modal para crear mazo */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-10 flex justify-center items-center">

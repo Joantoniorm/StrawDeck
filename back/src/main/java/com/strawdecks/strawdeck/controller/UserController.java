@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.strawdecks.strawdeck.dao.AuthRequest;
-import com.strawdecks.strawdeck.dao.AuthResponse;
-import com.strawdecks.strawdeck.dao.RegisterRequest;
+import com.strawdecks.strawdeck.modelo.AuthRequest;
+import com.strawdecks.strawdeck.modelo.AuthResponse;
+import com.strawdecks.strawdeck.modelo.RegisterRequest;
 import com.strawdecks.strawdeck.modelo.Users;
 import com.strawdecks.strawdeck.service.AuthService;
 import com.strawdecks.strawdeck.service.UserService;
@@ -26,8 +26,12 @@ public class UserController {
     private UserService userService;
     @PostMapping("/create")
     public ResponseEntity <String> createUser(@RequestBody Users user) {
-        userService.createUser(user);
-        return ResponseEntity.ok("Usuario Creado con Exito");
+        try {
+            userService.createUser(user);
+            return ResponseEntity.ok("Usuario Creado con Éxito");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
     
     @Autowired

@@ -24,6 +24,7 @@ public class DecksDaoImpl implements DecksDao{
     private JdbcTemplate jdbcTemplate;
     @Override
 public void create(Decks decks) {
+
     // SQL con el parámetro 'id' omitido porque es autoincremental
     String sqlInsert = """
             INSERT INTO decks (user_id, name, dateofcreation, activo) VALUES (?,?,?,?)
@@ -33,21 +34,19 @@ public void create(Decks decks) {
     jdbcTemplate.update(connection -> {
         PreparedStatement ps = connection.prepareStatement(sqlInsert, new String[] {"id"});
         int idx = 1;
-        // Asignación de parámetros
-        ps.setInt(idx++, decks.getUser_id());  // Parámetro 1
-        ps.setString(idx++, decks.getName());  // Parámetro 2
-        ps.setTimestamp(idx++, decks.getDateofcreation());  // Parámetro 3
-        ps.setBoolean(idx++, true);  // Parámetro 4 (activo)
+        ps.setInt(idx++, decks.getUser_id());
+        ps.setString(idx++, decks.getName());
+        ps.setTimestamp(idx++, decks.getDateofcreation());  
+        ps.setBoolean(idx++, true);
         return ps;
     }, keyHolder);
     
-    // Obtener el ID generado automáticamente por la base de datos
     decks.setId(keyHolder.getKey().intValue());
 }
 
     @Override
     public List<Decks> getAll() {
-        List<Decks> listDecks = jdbcTemplate.query("Select * from decks", (rs, rowNum) -> new Decks(
+        List<Decks> listDecks = jdbcTemplate.query("Select * from decks WHERE activo=1", (rs, rowNum) -> new Decks(
             rs.getInt("id"),
             rs.getInt("user_id"),
             rs.getString("name"),
@@ -137,8 +136,24 @@ public void create(Decks decks) {
             rs.getString("name"),
             rs.getTimestamp("dateofcreation"),
             rs.getBoolean("activo")), 
-            // Hacemos que sea contain para facilitar el manejo de datos para el usuario.
             "%" + name + "%"
             );
             return listDecks;
-    }}
+    }
+
+    @Override
+    public List<Decks> getChronoDecks(){
+
+        List<Decks> listDecks = jdbcTemplate.query("SELECT * FROM decks WHERE activo = 1 ORDER BY dateofcreation DESC LIMIT 15", (rs, rowNum) -> new Decks(
+            rs.getInt("id"),
+            rs.getInt("user_id"),
+            rs.getString("name"),
+            rs.getTimestamp("dateofcreation"),
+            rs.getBoolean("activo"))
+            );
+            return listDecks;
+    }
+
+    
+}
+

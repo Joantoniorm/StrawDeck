@@ -23,7 +23,7 @@ public class OnePieceCardScraper {
 
     public static void main(String[] args) {
         try {
-            List<Map<String, Object>> allCardsData = new ArrayList<>(); // Cambiar el tipo a Map<String, Object>
+            List<Map<String, Object>> allCardsData = new ArrayList<>();
             List<Map<String, String>> seriesOptions = getSeriesOptions();
             for (Map<String, String> option : seriesOptions) {
                 String seriesValue = option.get("value");
@@ -31,7 +31,7 @@ public class OnePieceCardScraper {
     
                 String htmlContent = fetchSeriesData(seriesValue);
                 if (htmlContent != null) {
-                    List<Map<String, Object>> cardsData = extractCardData(htmlContent, seriesValue); // Cambiar el tipo a Map<String, Object>
+                    List<Map<String, Object>> cardsData = extractCardData(htmlContent, seriesValue);
                     allCardsData.addAll(cardsData);
                 }
             }
@@ -69,7 +69,7 @@ public class OnePieceCardScraper {
     private static List<Map<String, Object>> extractCardData(String htmlContect, String seriesId) {
         Document doc = Jsoup.parse(htmlContect);
         List<Map<String, Object>> cards = new ArrayList<>();
-        System.out.println("me ejecuto");
+        
         for (Element cardElement : doc.select("dl.modalCol")) {
             Map<String, Object> cardData = new HashMap<>();
             cardData.put("name", escapeQuotes(getText(cardElement, ".cardName")));
@@ -77,9 +77,9 @@ public class OnePieceCardScraper {
             cardData.put("rarity", getSpanText(cardElement, ".infoCol", 1));
             cardData.put("type", getSpanText(cardElement, ".infoCol", 2));
             cardData.put("attribute", getText(cardElement, ".attribute i"));
-            cardData.put("power", getNumber(cardElement, ".power")); // Ahora almacena como un número
-            cardData.put("counter", getNumber(cardElement, ".counter")); // Ahora almacena como un número
-            cardData.put("cost", getNumber(cardElement, ".cost")); // Ahora almacena como un número
+            cardData.put("power", getNumber(cardElement, ".power"));
+            cardData.put("counter", getNumber(cardElement, ".counter"));
+            cardData.put("cost", getNumber(cardElement, ".cost")); 
             cardData.put("color", getText(cardElement, ".color"));
             cardData.put("card_type", getText(cardElement, ".feature"));
             cardData.put("effect", escapeQuotes(getText(cardElement, ".text")));
@@ -106,7 +106,7 @@ public class OnePieceCardScraper {
         // Elimina todo lo que no sea un dígito
         text = text.replaceAll("\\D", "");
     
-        // Si el texto es vacío o "-" (lo que significa que no hay un valor numérico válido), reemplázalo por "0"
+        // Si el texto es vacío o "-" (lo que significa que no hay un valor numérico válido)
         if (text.equals("-") || text.isEmpty()) {
             text = "0";
         }

@@ -18,46 +18,39 @@ public class Users implements UserDetails{
     private String password;
     private String gmail;
     private Boolean activo;
-    // Método obligatorio de UserDetails, devuelve las autoridades del usuario (si tienes roles, puedes añadirlos aquí)
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Si decides agregar roles o permisos, puedes hacerlo aquí:
-        return Collections.emptyList(); // Si no usas roles, devuelve una lista vacía
+        return Collections.emptyList(); 
     }
 
-    // Método obligatorio de UserDetails, devuelve el nombre de usuario
     @Override
     public String getUsername() {
         return this.username;
     }
 
-    // Método obligatorio de UserDetails, devuelve la contraseña
     @Override
     public String getPassword() {
         return this.password;
     }
 
-    // Método obligatorio de UserDetails, indica si la cuenta no ha expirado
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Por ahora retornamos true
+        return true;
     }
 
-    // Método obligatorio de UserDetails, indica si la cuenta no está bloqueada
     @Override
     public boolean isAccountNonLocked() {
-        return this.activo; // Retornamos 'activo', que indica si la cuenta está bloqueada o no
+        return this.activo; 
     }
 
-    // Método obligatorio de UserDetails, indica si la contraseña no ha expirado
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Por ahora retornamos true
+        return true;
     }
 
-    // Método obligatorio de UserDetails, indica si la cuenta está habilitada
     @Override
     public boolean isEnabled() {
-        return this.activo; // Retornamos 'activo', que indica si la cuenta está habilitada
+        return this.activo;
     }
 }

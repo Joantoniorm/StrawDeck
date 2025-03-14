@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react"
 import Deck from "./Deck";
+import CreateDeckButton from "./CreateDeckButton";
 
 const DeckList = () => {
     const [AllDecks, setAllDecks] = useState([]);
@@ -23,7 +24,9 @@ const DeckList = () => {
                     <Deck deckId={deck.id} className="w-full h-full max-w-[300px] max-h-[400px] flex items-center justify-center bg-gray-100 shadow-lg rounded-lg" />
                 </div>
             ))}
+            <CreateDeckButton/>
         </div>
+        
     </div>
     )
 }

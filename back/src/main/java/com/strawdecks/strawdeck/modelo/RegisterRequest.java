@@ -1,4 +1,4 @@
-package com.strawdecks.strawdeck.dao;
+package com.strawdecks.strawdeck.modelo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

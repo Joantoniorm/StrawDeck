@@ -12,4 +12,5 @@ public interface DecksDao {
     public List<Decks> getDeckByUser(String nameUser);
     public void update (Decks decks);
     public void delete (int id, Boolean activo);
+    public List<Decks> getChronoDecks();
 }

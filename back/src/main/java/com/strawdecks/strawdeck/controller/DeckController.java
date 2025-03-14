@@ -31,10 +31,10 @@ public class DeckController {
     private DeckService deckService;
     //Con token
     @PostMapping("/create")
-    public ResponseEntity<String> createDeck(@RequestBody Decks decks) {
+    public ResponseEntity<Integer> createDeck(@RequestBody Decks decks) {
         decks.setDateofcreation(new Timestamp(System.currentTimeMillis()));
         deckService.createDeck(decks);
-        return ResponseEntity.ok("Carta creada exitosamente");
+        return ResponseEntity.ok(decks.getId());
     }
 //Con token
     @PutMapping("/update")
@@ -44,7 +44,7 @@ public class DeckController {
     }
     //Con token
     @PutMapping("/delete/{id}")
-    public ResponseEntity<String> deleteDeck(@RequestParam int id){
+    public ResponseEntity<String> deleteDeck(@PathVariable int id){
         deckService.deckDelete(id, false);
         return ResponseEntity.ok("Deck eliminado con exito");
     }
@@ -59,6 +59,12 @@ public class DeckController {
         Optional<Decks> deck = deckService.findDeck(id);
         return deck.map(ResponseEntity::ok).orElseGet(()-> ResponseEntity.notFound().build());
     }
+    //Sin token
+    @GetMapping("/lastDecks")
+    public ResponseEntity<List<Decks>> getNewDecks() {
+        return ResponseEntity.ok(deckService.getChronoDecks());
+    }
+    
     
     @GetMapping("/all/user/{id}")
     public ResponseEntity<List<Decks>> getDecksByUser(@PathVariable String nameUser) {

@@ -22,7 +22,13 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UsersDao usersDao;
     public void createUser(Users users){
-        usersDao.create(users);
+        
+            //Comprobamos si existe un usuario con el nombre
+            Optional <Users> existingUser= usersDao.findByName(users.getUsername());
+            if (existingUser.isPresent()) {
+                throw new IllegalArgumentException("El nombre de usuario ya está en uso");
+            }
+            usersDao.create(users);
     }
     public void updateUser(Users users){
         usersDao.update(users);

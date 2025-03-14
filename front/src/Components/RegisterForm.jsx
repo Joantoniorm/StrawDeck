@@ -5,9 +5,14 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [gmail, setGmail] = useState("");
+    //Error al crear usuario
+    const [error, setError] = useState("");
+    const [usernameError,setUsernameError]= useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(""); 
+        setUsernameError(false); 
 
         try {
             const response = await axios.post("http://localhost:8080/user/register", {
@@ -16,20 +21,26 @@ const Register = () => {
                 gmail   
             });
 
+            // Si la respuesta es exitosa, guardamos el token
             const token = response.data.token;
             localStorage.setItem("token", token);
-            alert("Registro exitoso!");
 
         } catch (error) {
             console.error("Error al registrarse:", error);
-            alert("Hubo un problema con el registro.");
+            if (error.response && error.response.status === 403) {
+                setError("El nombre de usuario ya está en uso");
+                setUsernameError(true);
+                console.log("Hola")
+            } else {
+                setError("Ocurrió un error inesperado. Intenta de nuevo.");
+            }
         }
     };
 
     return (
         <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-                <h2 className="mt-10 text-center text-2xl font-bold tracking-tight text-gray-900">
+                <h2 className="mt-10 text-center text-white text-2xl font-bold tracking-tight text-gray-900">
                     Create your account
                 </h2>
             </div>
@@ -37,7 +48,7 @@ const Register = () => {
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="username" className="block text-sm font-medium text-gray-900">
+                        <label htmlFor="username" className="block text-white text-sm font-medium text-gray-900">
                             Username
                         </label>
                         <div className="mt-2">
@@ -48,13 +59,16 @@ const Register = () => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
-                                className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
+                                className={`block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 
+                                    placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 sm:text-sm
+                                    ${usernameError ? "border-red-500 outline-red-500" : "outline-gray-300 focus:outline-indigo-600"}`}
                             />
+                            {usernameError && <p className="text-red-500 text-sm mt-1">{error}</p>}
                         </div>
                     </div>
 
                     <div>
-                        <label htmlFor="gmail" className="block text-sm font-medium text-gray-900">
+                        <label htmlFor="gmail" className="block text-white text-sm font-medium text-gray-900">
                             Gmail
                         </label>
                         <div className="mt-2">
@@ -71,7 +85,7 @@ const Register = () => {
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-900">
+                        <label htmlFor="password" className="block text-white text-sm font-medium text-gray-900">
                             Password
                         </label>
                         <div className="mt-2">

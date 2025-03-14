@@ -26,17 +26,30 @@ const CardModal = ({ card, onClose }) => {
 };
 
 const Card = ({ card, addCard, removeCard }) => {
+
   const [showModal, setShowModal] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const isInDecks = location.pathname.includes("edit");
 
   return (
     <>
-      <div 
-        className="relative cursor-pointer border border-gray-300 p-4 rounded-lg shadow-md bg-gray-800 text-white w-[150px] hover:scale-105 transition-transform"
+      <div
+        className="relative h-[200px] cursor-pointer border border-gray-300 p-4 rounded-lg shadow-md bg-gray-800 text-white w-[150px] hover:scale-105 transition-transform"
         onClick={() => setShowModal(true)}
       >
-        <img src={card.image_url} alt={card.name} className="w-full h-auto rounded-md" />
+        {isLoading && (
+          <div className="w-full h-[162px] bg-gray-500 rounded-md"></div>
+        )}
+        <img
+          src={card.image_url}
+          alt={card.name}
+          className={`w-full h-[162px] rounded-md transition-opacity duration-500 ${
+            isLoading ? "opacity-0" : "opacity-100"
+          }`}
+          onLoad={() => setIsLoading(false)}
+        />
 
         {isInDecks && (
           <>

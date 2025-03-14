@@ -166,11 +166,9 @@ const DeckBuilder = () => {
 
                 <div className=" md:mt-10 md:ml-4 flex flex-col justify-center items-center md:justify-start md:items-start col-span-1 md:col-span-2">
                     <h1 className="">Deck:</h1>
-                    <input
-                        type="text"
-                        className="block mt-3 p-2 w-[80%] h-[50px] rounded-md bg-white text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
-                        placeholder={newDeckName}
-                    />
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-white-600 uppercase tracking-wide shadow-lg">
+                        {deckInfo.name}
+                    </h1>
                     <h1 className="pt-4">{numberCards}/51</h1>
                 </div>
             </div>
